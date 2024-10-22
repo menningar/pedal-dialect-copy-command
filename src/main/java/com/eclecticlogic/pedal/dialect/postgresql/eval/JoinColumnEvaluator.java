@@ -18,7 +18,7 @@ package com.eclecticlogic.pedal.dialect.postgresql.eval;
 
 import com.eclecticlogic.pedal.dialect.postgresql.CopyAttribute;
 
-import javax.persistence.JoinColumn;
+import jakarta.persistence.JoinColumn;
 import java.lang.reflect.Method;
 
 /**

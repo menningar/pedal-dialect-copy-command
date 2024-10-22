@@ -1,14 +1,10 @@
 drop schema if exists dialect cascade;
-create schema dialect; 
+create schema dialect;
 set search_path to dialect;
 
 
 CREATE TABLE "exotic_types"(
  "login" Varchar NOT NULL,
- "countries" Bit(7) NOT NULL,
- "authorizations" Character varying(20)[] NOT NULL,
- "scores" Bigint[] NULL,
- "gpa" Bigint[] NULL,
  "status" Character(2) NOT NULL,
  "custom" varchar NOT NULL,
  "total" integer not null,
@@ -42,7 +38,7 @@ CREATE TABLE "planet" (
     "distance" integer not null
 ) WITH (OIDS = FALSE)
 ;
-    
+
 
 ALTER TABLE "planet" ADD CONSTRAINT "Key4" PRIMARY KEY ("name", "position")
 ;

@@ -28,7 +28,7 @@ public interface EvaluatorChain {
 
     /**
      * Add attribute to evaluated attributes list.
-     * @param attribute
+     * @param attribute copy attribute
      */
     void add(CopyAttribute attribute);
 

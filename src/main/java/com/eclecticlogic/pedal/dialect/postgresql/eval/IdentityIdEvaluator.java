@@ -16,11 +16,9 @@
 
 package com.eclecticlogic.pedal.dialect.postgresql.eval;
 
-import com.eclecticlogic.pedal.dialect.postgresql.CopyAttribute;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import java.lang.reflect.Method;
 
 /**
@@ -30,11 +28,10 @@ public class IdentityIdEvaluator extends AbstractMethodEvaluator {
 
     @Override
     public void evaluate(Method method, EvaluatorChain chain) {
-        if (method.isAnnotationPresent(Id.class) && method.isAnnotationPresent(GeneratedValue.class) && method.getAnnotation
-                (GeneratedValue.class).strategy() == GenerationType.IDENTITY) {
-            // Ignore identity generation-type id values as these are auto-generate.
-        } else {
+        if (!method.isAnnotationPresent(Id.class) || !method.isAnnotationPresent(GeneratedValue.class) || method.getAnnotation
+                (GeneratedValue.class).strategy() != GenerationType.IDENTITY) {
             chain.doNext();
         }
+        // else Ignore identity generation-type id values as these are auto-generate.
     }
 }

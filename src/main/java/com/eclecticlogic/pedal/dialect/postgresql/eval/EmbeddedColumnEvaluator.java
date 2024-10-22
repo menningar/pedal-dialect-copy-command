@@ -17,17 +17,13 @@
 package com.eclecticlogic.pedal.dialect.postgresql.eval;
 
 import com.eclecticlogic.pedal.dialect.postgresql.CopyAttribute;
-
-import javax.persistence.AttributeOverride;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Transient;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Transient;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-
-import static java.util.stream.Collectors.*;
 
 /**
  * Created by kabram on 4/6/17.
@@ -41,11 +37,9 @@ public class EmbeddedColumnEvaluator extends AbstractMethodEvaluator {
             Map<String, AttributeOverride> overrides = getAttributeOverrides(method);
 
             Class<?> embeddedClz = method.getReturnType();
-            for (Method embeddedMethod : Arrays.stream(embeddedClz.getMethods()) //
-                    .filter(it -> it.isAnnotationPresent(Column.class)) //
-                    .collect(toList())) {
+            for (Method embeddedMethod : Arrays.stream(embeddedClz.getMethods()).filter(it -> it.isAnnotationPresent(Column.class)).toList()) {
                 String name = getPropertyName(embeddedMethod);
-                String columnName = null;
+                String columnName;
                 if (overrides.containsKey(name)) {
                     columnName = overrides.get(name).column().name();
                 } else {

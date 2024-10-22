@@ -16,7 +16,7 @@
 
 package com.eclecticlogic.pedal.dialect.postgresql;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.io.Serializable;
 
 /**

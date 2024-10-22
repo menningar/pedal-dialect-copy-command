@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2014-2015 Eclectic Logic LLC
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,17 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 package com.eclecticlogic.pedal.dm;
 
 import java.io.Serializable;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 /**
  * @author kabram.
@@ -35,7 +35,6 @@ public class EmbedOverride implements Serializable {
     private VehicleIdentifier identifier;
     private String owner;
     private String state;
-
 
     @AttributeOverrides({ @AttributeOverride(name = "make", column = @Column(name = "my_make", nullable = false)),
             @AttributeOverride(name = "model", column = @Column(name = "my_model")),

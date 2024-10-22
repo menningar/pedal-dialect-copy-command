@@ -8,11 +8,7 @@ Pedal-dialect, a member of the Pedal family ([pedal-tx](https://github.com/eclec
 - Provider support (for Hibernate)
 	- Access current schema name
 	- Get table name for given entity (including when remapped by orm.xml)
-	- Hibernate user-type (mutable and non-mutable) base classes.
-	- List and Set user-types.
 - Postgresql specific features
-	- Adaptation of List/Set type for Hibernate
-	- Hibernate user-type for Postgres bit arrays
 	- Support for using the COPY command directly with JPA entity classes.
 
 ## Getting started
@@ -21,19 +17,17 @@ Download the pedal-dialect jar from Maven central:
 
 ```
 	<groupId>com.eclecticlogic</groupId>
-	<artifactId>pedal-dialect</artifactId>
-	<version>1.5.3</version>
+	<artifactId>pedal-dialect-copy-command</artifactId>
+	<version>1.5.7</version>
 
 ```
 
 Minimum dependencies that you need to provide in your application:
 
 1. slf4j (over logback or log4j) v1.7.7 or higher
-2. Spring-boot jpa 1.2 or
-2. spring-tx, spring-context and spring-orm v4.0 or higher
-4. hibernate-core and hibernate-entitymanager 4.3 or higher.
-5. JDBC4 compliant driver and connection pool manager (BoneCP, HikariCP, Apache Commons DBCP2 and Tomcat JDBC are supported).
-
+2. Spring-boot jpa 3 or
+4. hibernate-core and hibernate-entitymanager 6.
+5. JDBC4 compliant driver and connection pool manager (HikariCP, Apache Commons DBCP2 and Tomcat JDBC are supported).
 
 ## Configuration
 
@@ -60,58 +54,6 @@ To enable the `CopyCommand` create an instance of it and set the ProviderAccess 
         return command;
     }
 
-## Posgresql User Types
-
-Pedal provides support (via Hibernate user-types) for a number of non-standard Postgresql data types that can really help streamline your data model. Among these are array types and bits.
-
-Pedal supports `List` and `Set` types for `String`, `Integer`, `Long`, `Date`, `Boolean` and `BigDecimal` (i.e., collections of standard sql-types). To use `List` and `Set` data types, simply annotate your JPA/Hibernate entity as shown.
-
-```
-
-    @Column(name = "authorizations", nullable = false)
-    @Type(type = "com.eclecticlogic.pedal.provider.hibernate.SetType", parameters = @Parameter(name = ArrayType.DIALECT_PRIMITIVE_NAME, value = PostgresqlArrayPrimitiveName.STRING))
-    public Set<String> getAuthorizations() {
-        return this.authorizations;
-    }
-
-
-    @Column(name = "scores")
-    @Type(type = "com.eclecticlogic.pedal.provider.hibernate.ListType", parameters = { @Parameter(name = ArrayType.DIALECT_PRIMITIVE_NAME, value = PostgresqlArrayPrimitiveName.LONG) })
-    public List<Long> getScores() {
-        return this.scores;
-    }
-
-```
-
-Pedal allows you to control how empty collections are treated - by default they are written as null values in the database, but you can change that:
-
-```
-
-    @Column(name = "gpa")
-    @Type(type = "com.eclecticlogic.pedal.provider.hibernate.ListType", parameters = {
-            @Parameter(name = ArrayType.DIALECT_PRIMITIVE_NAME, value = PostgresqlArrayPrimitiveName.LONG),
-            @Parameter(name = ArrayType.EMPTY_IS_NULL, value = "false") })
-    public List<Long> getGpa() {
-        return gpa;
-    }
-
-
-```
-
-Pedal also allow mapping of Postgresql bit array to `java.util.BitSet`. 
-
-```
-
-    @Column(name = "countries", nullable = false, length = 7)
-    @Type(type = "com.eclecticlogic.pedal.provider.hibernate.dialect.PostgresqlBitStringUserType", parameters = @Parameter(name = PostgresqlBitStringUserType.BIT_LENGTH, value = "7"))
-    public BitSet getCountries() {
-        return this.countries;
-    }
-
-
-```
-
-Note: The BIT_LENGTH parameter is required because Hibernate User-Types cannot access the JPA annotation.
 
 ## Copy Command features
 

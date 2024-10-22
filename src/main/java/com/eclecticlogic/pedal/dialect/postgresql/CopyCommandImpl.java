@@ -16,10 +16,23 @@
 
 package com.eclecticlogic.pedal.dialect.postgresql;
 
-import com.eclecticlogic.pedal.dialect.postgresql.eval.EvaluatorChain;
 import com.eclecticlogic.pedal.dialect.postgresql.eval.MethodEvaluator;
 import com.google.common.base.Stopwatch;
-import javassist.*;
+import jakarta.persistence.EntityManager;
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import javassist.CannotCompileException;
+import javassist.ClassClassPath;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtNewMethod;
+import javassist.NotFoundException;
 import org.postgresql.copy.CopyIn;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -30,17 +43,6 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
-import javax.persistence.EntityManager;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.util.stream.Collectors.toList;
-
 /**
  * Created by kabram.
  */
@@ -48,11 +50,10 @@ public class CopyCommandImpl extends AbstractCopyCommandImpl {
 
     private static final String COPY_EXTRACTOR_PACKAGE = "com.eclecticlogic.pedal.dialect.postgresql.extractor";
 
-    private ConcurrentHashMap<Class<? extends Serializable>, CopyExtractor<? extends Serializable>> extractorsByClass = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<? extends Serializable>, CopyExtractor<? extends Serializable>> extractorsByClass = new ConcurrentHashMap<>();
     // This is used to prevent linkage error due to concurrent creation of classes.
-    private static AtomicInteger extractorNameSuffix = new AtomicInteger();
+    private static final AtomicInteger extractorNameSuffix = new AtomicInteger();
     private static final Logger logger = LoggerFactory.getLogger(CopyCommandImpl.class);
-
 
     @Override
     public <E extends Serializable> void insert(EntityManager entityManager, CopyList<E> entityList) {
@@ -61,16 +62,15 @@ public class CopyCommandImpl extends AbstractCopyCommandImpl {
         }
     }
 
-
     public <E extends Serializable> void _insert(EntityManager entityManager, CopyList<E> entityList) {
         Class<E> clz = (Class<E>) entityList.get(0).getClass();
-        extractorsByClass.computeIfAbsent(clz, (cz) -> getExtractor(cz));
+        extractorsByClass.computeIfAbsent(clz, this::getExtractor);
 
         CopyExtractor extractor = extractorsByClass.get(clz);
         providerAccessSpi.run(entityManager, connection -> {
             try {
                 CopyManager copyManager = new CopyManager((BaseConnection) connectionAccessor.getRawConnection(connection));
-                Encoding encoding = ((BaseConnection)connectionAccessor.getRawConnection(connection)).getEncoding();
+                Encoding encoding = ((BaseConnection) connectionAccessor.getRawConnection(connection)).getEncoding();
                 Stopwatch timer = Stopwatch.createStarted();
                 CopyIn cp = copyManager.copyIn("copy " + getEntityName(entityList) + "(" + extractor.getFieldList() + ") from stdin");
                 long records;
@@ -93,27 +93,20 @@ public class CopyCommandImpl extends AbstractCopyCommandImpl {
         });
     }
 
-
     protected List<CopyAttribute> getAttributesOfInterest(Class<? extends Serializable> clz) {
         List<CopyAttribute> attributes = new ArrayList<>();
 
-        for (Method method : Arrays.stream(clz.getMethods()).filter(it -> it.getParameterCount() == 0).collect(toList())) {
+        for (Method method : Arrays.stream(clz.getMethods()).filter(it -> it.getParameterCount() == 0).toList()) {
             getMethodEvaluator().evaluate(method, clz, attributes);
         }
         return attributes;
     }
 
-
     protected MethodEvaluator getMethodEvaluator() {
-        return new MethodEvaluator() {
-            @Override
-            public void evaluate(Method method, EvaluatorChain chain) {
-                // noop
-            }
+        return (method, chain) -> {
+            // noop
         };
     }
-
-
 
     protected <E extends Serializable> CopyExtractor<E> getExtractor(Class<E> clz) {
         List<CopyAttribute> attributes = getAttributesOfInterest(clz);
@@ -131,12 +124,11 @@ public class CopyCommandImpl extends AbstractCopyCommandImpl {
             throw new RuntimeException(e);
         }
         try {
-            return (CopyExtractor<E>) cc.toClass().newInstance();
-        } catch (CannotCompileException | InstantiationException | IllegalAccessException e) {
+            return (CopyExtractor<E>) cc.toClass().getDeclaredConstructor().newInstance();
+        } catch (CannotCompileException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
-
 
     protected String getClassShell(String packageName, String clsName, String superName) {
         STGroup group = new STGroupFile("pedal/template/classShell.stg");
@@ -149,7 +141,6 @@ public class CopyCommandImpl extends AbstractCopyCommandImpl {
         return s;
     }
 
-
     protected String getFieldListBody(List<CopyAttribute> attributes) {
         STGroup group = new STGroupFile("pedal/template/methodGetFieldList.stg");
         ST st = group.getInstanceOf("methodBody");
@@ -158,7 +149,6 @@ public class CopyCommandImpl extends AbstractCopyCommandImpl {
         logger.trace(s);
         return s;
     }
-
 
     protected String getValueListBody(List<CopyAttribute> attributes, Class<?> clz) {
         STGroup group = new STGroupFile("pedal/template/methodGetValueList.stg");

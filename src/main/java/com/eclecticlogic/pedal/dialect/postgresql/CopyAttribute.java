@@ -16,11 +16,11 @@
 
 package com.eclecticlogic.pedal.dialect.postgresql;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Converter;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,89 +34,57 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CopyAttribute {
 
     private final List<Method> methods = new ArrayList<>();
-    private AtomicLong variableCounter = new AtomicLong();
-    private ThreadLocal<String> currentVariable = new ThreadLocal<>();
+    private final AtomicLong variableCounter = new AtomicLong();
+    private final ThreadLocal<String> currentVariable = new ThreadLocal<>();
     private String columnName; // Name of db column.
-
 
     public List<Method> getMethods() {
         return methods;
     }
 
-
     public Method getEntityMethod() {
         return methods.get(0);
     }
-
 
     public String getColumnName() {
         return columnName;
     }
 
-
     public void setColumnName(String columnName) {
         this.columnName = columnName;
     }
-
 
     public String getNewVariable() {
         currentVariable.set("v" + variableCounter.getAndIncrement());
         return getVariable();
     }
 
-
     public String getVariable() {
         return currentVariable.get();
     }
-
-
-    public boolean isCopyConverter() {
-        return getEntityMethod().isAnnotationPresent(CopyConverter.class);
-    }
-
-
-    public Class<?> getCopyConverterClass() {
-        return getEntityMethod().getAnnotation(CopyConverter.class).value();
-    }
-
-
-    public boolean isCopyAsBitString() {
-        return getEntityMethod().isAnnotationPresent(CopyAsBitString.class);
-    }
-
 
     public int getColumnLength() {
         return getEntityMethod().getAnnotation(Column.class).length();
     }
 
-
     public boolean isJpaConverter() {
         return getEntityMethod().isAnnotationPresent(Convert.class);
     }
 
-
-    public Class<? extends Converter> getJpaConverterClass() {
+    public Class<? extends AttributeConverter> getJpaConverterClass() {
         return getEntityMethod().getAnnotation(Convert.class).converter();
     }
-
 
     public boolean isCollection() {
         return Collection.class.isAssignableFrom(getEntityMethod().getReturnType());
     }
 
-
-    public boolean isCopyEmptyAsNull() {
-        return getEntityMethod().isAnnotationPresent(CopyEmptyAsNull.class);
-    }
-
-
     public boolean isJoinColumn() {
         return getEntityMethod().isAnnotationPresent(JoinColumn.class);
     }
 
-
     public Method getJoinColumnIdMethod() {
-        return Arrays.stream(getEntityMethod().getReturnType().getMethods()) //
-                .filter(it -> it.isAnnotationPresent(Id.class)).findFirst().get();
+        return Arrays.stream(getEntityMethod().getReturnType().getMethods())
+                .filter(it -> it.isAnnotationPresent(Id.class)).findFirst().orElseThrow();
     }
 }

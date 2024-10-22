@@ -18,8 +18,8 @@ package com.eclecticlogic.pedal.dialect.postgresql.eval;
 
 import com.eclecticlogic.pedal.dialect.postgresql.CopyAttribute;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.EmbeddedId;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.EmbeddedId;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -38,19 +38,19 @@ public class EmbeddedIdColumnEvaluator extends AbstractMethodEvaluator {
             Map<String, AttributeOverride> overrides = getAttributeOverrides(method);
 
             Class<?> embeddedClz = method.getReturnType();
-            BeanInfo info = null;
+            BeanInfo info;
             try {
                 info = Introspector.getBeanInfo(embeddedClz);
             } catch (IntrospectionException e) {
                 throw new RuntimeException(e);
             }
-            for (String propertyName : overrides.keySet()) {
+            for (Map.Entry<String, AttributeOverride> entry : overrides.entrySet()) {
                 for (PropertyDescriptor propDesc : info.getPropertyDescriptors()) {
-                    if (propDesc.getName().equals(propertyName)) {
+                    if (propDesc.getName().equals(entry.getKey())) {
                         CopyAttribute attribute = new CopyAttribute();
                         attribute.getMethods().add(method);
                         attribute.getMethods().add(propDesc.getReadMethod());
-                        attribute.setColumnName(overrides.get(propertyName).column().name());
+                        attribute.setColumnName(entry.getValue().column().name());
                         chain.add(attribute);
                         break;
                     }

@@ -18,9 +18,6 @@ package com.eclecticlogic.pedal.dialect.postgresql;
 
 import com.eclecticlogic.pedal.connection.ConnectionAccessor;
 import com.eclecticlogic.pedal.provider.ProviderAccessSpi;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 
 /**
@@ -31,26 +28,21 @@ public abstract class AbstractCopyCommandImpl implements CopyCommand {
     protected ConnectionAccessor connectionAccessor;
     protected ProviderAccessSpi providerAccessSpi;
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractCopyCommandImpl.class);
-
-
     public void setConnectionAccessor(ConnectionAccessor connectionAccessor) {
         this.connectionAccessor = connectionAccessor;
     }
-
 
     public void setProviderAccessSpi(ProviderAccessSpi providerAccessSpi) {
         this.providerAccessSpi = providerAccessSpi;
     }
 
-
     protected <E extends Serializable> String getEntityName(CopyList<E> copyList) {
         String alternateName = copyList.getAlternateTableName();
-        if (alternateName == null || alternateName.trim().length() == 0) {
+        if (alternateName == null || alternateName.trim().isEmpty()) {
             return providerAccessSpi.getTableName(copyList.get(0).getClass());
         } else {
             String schemaName = providerAccessSpi.getSchemaName();
-            if (schemaName == null || schemaName.trim().length() == 0) {
+            if (schemaName == null || schemaName.trim().isEmpty()) {
                 return copyList.getAlternateTableName();
             } else {
                 return schemaName + "." + copyList.getAlternateTableName();

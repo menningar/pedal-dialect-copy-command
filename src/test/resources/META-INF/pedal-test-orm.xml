@@ -1,22 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<entity-mappings xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm
-        http://xmlns.jcp.org/xml/ns/persistence/orm_2_1.xsd" version="2.1">
+<entity-mappings version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence/orm
+             https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
 
+    <!-- Use this to define entity listeners. -->
+    <!-- <persistence-unit-metadata> -->
+    <!-- <persistence-unit-defaults> -->
+    <!-- <entity-listeners> -->
+    <!-- <entity-listener class=""></entity-listener> -->
+    <!-- </entity-listeners> -->
+    <!-- </persistence-unit-defaults> -->
+    <!-- </persistence-unit-metadata> -->
 
-	<!-- Use this to define entity listeners. -->
-	<!-- <persistence-unit-metadata> -->
-	<!-- <persistence-unit-defaults> -->
-	<!-- <entity-listeners> -->
-	<!-- <entity-listener class=""></entity-listener> -->
-	<!-- </entity-listeners> -->
-	<!-- </persistence-unit-defaults> -->
-	<!-- </persistence-unit-metadata> -->
+    <!-- Use this to associate an Entity class to a different table name. -->
+    <entity class="com.eclecticlogic.pedal.dm.Student">
+        <table name="graduate_student"/>
+    </entity>
 
-	<!-- Use this to associate an Entity class to a different table name. -->
-	<entity class="com.eclecticlogic.pedal.dm.Student">
-		<table name="graduate_student" />
-	</entity>
-
+    <entity class="com.eclecticlogic.pedal.dm.EmbedOverride">
+        <table name="embed_override"/>
+    </entity>
+    <entity class="com.eclecticlogic.pedal.dm.Planet">
+        <table name="planet"/>
+    </entity>
+    <entity class="com.eclecticlogic.pedal.dm.ExoticTypes">
+        <table name="exotic_types"/>
+    </entity>
+    <entity class="com.eclecticlogic.pedal.dm.EmbedSimple">
+    </entity>
 </entity-mappings>
